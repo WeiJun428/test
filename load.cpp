@@ -1,9 +1,10 @@
 #include <tensorflow/core/protobuf/meta_graph.pb.h>
 #include <tensorflow/core/public/session.h>
 #include <tensorflow/core/framework/attr_value_util.h>
+#include <tensorflow/core/platform/load_library.h>
 #include <iostream>
 
-#define FILENAME ((char* )"/tmp/tmpsm0lo99w/tf_frozen.pb")
+#define FILENAME ((char* )"/tmp/tmp5u6mazfm/tf_frozen.pb")
 
 // Global graph definition and session
 tensorflow::GraphDef GraphDef;
@@ -65,33 +66,43 @@ void Predict() {
   std::vector<std::pair<std::string, tensorflow::Tensor>> Input = {{"input", X}};
   std::vector<tensorflow::Tensor> Output;
 
-  float* XData = X.flat<float>().data();
-  for (int i = 0; i < 200; i++) {
-    XData[i] = 1.0f * i;
+  for (int i = 0; i < 10; i++) {
+
+    float* XData = X.flat<float>().data();
+    for (int j = 0; j < 200; j++) {
+      XData[i] = 1.0f * j + i;
+    }
+
+    // Replace "output" with tensor name
+    tensorflow::Status Status = Session->Run(Input, { "output" }, {}, &Output);
+
+    std::cout << "Done Inference " << i << std::endl;
+
+    if (!Status.ok()) {
+      std::cerr << "Error predicting " << Status.ToString() << "\n";
+      return;
+    }
+
+    auto output_c = Output[0].tensor<float, 2>();
+    /*
+    for (int i = 0; i < 100; i++) {
+      std::cout << output_c(0, i) << "\n";
+    } */
+
+    std::cout << Output[0].DebugString() << "\n";
   }
-
-  // Replace YOUR_OUTPUT_TENSOR with your output tensor name
-  tensorflow::Status Status = Session->Run(Input, { "output" }, {}, &Output);
-
-  std::cout << "Done Inference\n";
-
-  if (!Status.ok()) {
-    std::cerr << "Error predicting " << Status.ToString() << "\n";
-    return;
-  }
-
-  auto output_c = Output[0].tensor<float, 2>();
-
-  for (int i = 0; i < 100; i++) {
-    std::cout << output_c(0, i) << "\n";
-  }
-
-  std::cout << Output[0].DebugString() << "\n";
-  // std::cout << Output.size() << "\n";
 }
 
 
 int main() {
+  tensorflow::Status Status;
+  void* handler;
+  Status = tensorflow::internal::LoadLibrary((char *)"/app/test-dir/build/grid_sampling.so", &handler);
+  if (!Status.ok()) {
+    std::cerr << "Error predicting " << Status.ToString() << "\n";
+    return -1;
+  }
+
   if (LoadGraph(FILENAME)) {
     PrintGraph();
     Predict();
