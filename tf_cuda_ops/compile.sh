@@ -7,7 +7,7 @@ if [ ! -d ./build ]; then
   mkdir build
 fi
 # NEED TO SWITCH TO THE CORRECT PYTHON ENVIRONMENT BEFORE EXECUTION.
-TF_CFLAGS=( $(python3 -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
+TF_CFLAGS=( $(python3 -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') -D_GLIBCXX_USE_CXX11_ABI=1)
 TF_LFLAGS=( $(python3 -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
 
 nvcc src/get_roi_bbox.cu -o build/get_roi_bbox.cu.o -c ${TF_CFLAGS[@]} -D GOOGLE_CUDA=1 -x cu -Xcompiler -fPIC -gencode=arch=compute_72,code=compute_72 -O3 
@@ -15,7 +15,7 @@ g++ -std=c++11 src/get_roi_bbox.cpp build/get_roi_bbox.cu.o -o build/get_roi_bbo
 echo "Done: get_roi_bbox.so"
 
 nvcc src/grid_sampling.cu -o build/grid_sampling.cu.o -c ${TF_CFLAGS[@]} -D GOOGLE_CUDA=1 -x cu -Xcompiler -fPIC -gencode=arch=compute_72,code=compute_72 -O3 
-g++ -std=c++11 src/grid_sampling.cpp build/grid_sampling.cu.o -o build/libgrid_sampling.so -shared ${TF_CFLAGS[@]} -fPIC -lcudart ${TF_LFLAGS[@]} -L /usr/local/cuda/lib64/ -I /usr/local/cuda/include
+g++ -std=c++11 src/grid_sampling.cpp build/grid_sampling.cu.o -o build/grid_sampling.so -shared ${TF_CFLAGS[@]} -fPIC -lcudart ${TF_LFLAGS[@]} -L /usr/local/cuda/lib64/ -I /usr/local/cuda/include
 echo "Done: grid_sampling.so"
 
 nvcc src/roi_logits_to_attrs.cu -o build/roi_logits_to_attrs.cu.o -c ${TF_CFLAGS[@]} -D GOOGLE_CUDA=1 -x cu -Xcompiler -fPIC -gencode=arch=compute_72,code=compute_72 -O3 

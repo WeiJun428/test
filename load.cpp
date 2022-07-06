@@ -4,7 +4,7 @@
 #include <tensorflow/core/platform/load_library.h>
 #include <iostream>
 
-#define FILENAME ((char* )"/tmp/tmp5u6mazfm/tf_frozen.pb")
+#define FILENAME ((char* )"/tmp/tmpnrn54to4/tf_frozen.pb")
 
 // Global graph definition and session
 tensorflow::GraphDef GraphDef;
@@ -74,6 +74,52 @@ void Predict() {
     }
 
     // Replace "output" with tensor name
+    tensorflow::Status Status = Session->Run(Input, { "ArgMax" }, {}, &Output);
+
+    std::cout << "Done Inference " << i << std::endl;
+
+    if (!Status.ok()) {
+      std::cerr << "Error predicting " << Status.ToString() << "\n";
+      return;
+    }
+
+    auto output_c = Output[0].tensor<float, 2>();
+    /*
+    for (int i = 0; i < 100; i++) {
+      std::cout << output_c(0, i) << "\n";
+    } */
+
+    std::cout << Output[0].DebugString() << "\n";
+  }
+}
+
+void PredictDvDet() {
+
+  // Calculate number of points
+  // Complicated configs to study tests/t.py
+
+  // Inputs 
+  tensorflow::Tensor Coors(tensorflow::DT_FLOAT, tensorflow::TensorShape({1, 200}));
+  tensorflow::Tensor Features(tensorflow::DT_FLOAT, tensorflow::TensorShape({1, 200}));
+  tensorflow::Tensor NumList(tensorflow::DT_INT32, tensorflow::TensorShape({1, 200}));
+  tensorflow::Tensor Bboxes(tensorflow::DT_FLOAT, tensorflow::TensorShape({1, 200}));
+
+  // Input and Output tensor
+  std::vector<std::pair<std::string, tensorflow::Tensor>> Input = {
+	  {"coors", Coors},
+	  {"features", Features}, 
+	  {"num_list", NumList},
+  	  {"bboxes", Bboxes}};
+  std::vector<tensorflow::Tensor> Output;
+
+  for (int i = 0; i < 10; i++) {
+
+    float* XData = X.flat<float>().data();
+    for (int j = 0; j < 200; j++) {
+      XData[i] = 1.0f * j + i;
+    }
+
+    // Replace "output" with tensor name
     tensorflow::Status Status = Session->Run(Input, { "output" }, {}, &Output);
 
     std::cout << "Done Inference " << i << std::endl;
@@ -95,17 +141,33 @@ void Predict() {
 
 
 int main() {
+  std::string so_file[8] = {
+    "get_roi_bbox.so",
+    "grid_sampling.so",
+    "nms.so",
+    "roi_logits_to_attrs.so",
+    "voxel_sampling_idx.so",
+    "radix_sort1d.so",
+    "voxel_sampling_feature.so",
+    "voxel_sampling_idx_binary.so"
+  };
   tensorflow::Status Status;
   void* handler;
-  Status = tensorflow::internal::LoadLibrary((char *)"/app/test-dir/build/grid_sampling.so", &handler);
-  if (!Status.ok()) {
-    std::cerr << "Error predicting " << Status.ToString() << "\n";
-    return -1;
+
+  for (int i = 0; i < 8; i++) {
+    std::cout << "Loading library " << so_file[i] << "\n";
+    std::string file_name = "/app/test-dir/tf_cuda_ops/build/" + so_file[i];
+    Status = tensorflow::internal::LoadLibrary(file_name.c_str(), &handler);
+    if (!Status.ok()) {
+      std::cerr << "Error: " << Status.ToString() << "\n";
+      return -1;
+    }
   }
 
   if (LoadGraph(FILENAME)) {
     PrintGraph();
     Predict();
+    // PredictDvDet();
   }
 
   return 0;

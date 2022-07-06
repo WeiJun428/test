@@ -1,4 +1,8 @@
 import tensorflow as tf
+from os.path import join, dirname, realpath
+from tensorflow.python.framework import ops
+
+CURR_DIR = dirname(realpath(__file__))
 
 graph = tf.Graph()
 with graph.as_default():
@@ -17,6 +21,11 @@ model_dir = tempfile.mkdtemp()
 graph_def_file = os.path.join(model_dir, 'tf_graph.pb')
 checkpoint_file = os.path.join(model_dir, 'tf_model.ckpt')
 frozen_graph_file = os.path.join(model_dir, 'tf_frozen.pb')
+
+print(join(CURR_DIR, "tf_cuda_ops", "build", "get_roi_bbox.so"))
+exit 
+
+get_roi_bbox_exe = tf.load_op_library(join(CURR_DIR, "tf_cuda_ops", "build", "get_roi_bbox.so"))
 
 with tf.compat.v1.Session(graph=graph) as sess:
   # initialize variables
