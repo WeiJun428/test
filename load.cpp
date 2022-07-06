@@ -4,7 +4,24 @@
 #include <tensorflow/core/platform/load_library.h>
 #include <iostream>
 
+#define LIB_DIR  ("/app/test-dir/tf_cuda_ops/build/")
 #define FILENAME ((char* )"/tmp/tmpnrn54to4/tf_frozen.pb")
+
+#define NUM_RUNS            1
+#define VALID_BATCH_SIZE    1
+#define MAX_NBBOX           256
+#define NUM_INPUT_CHANNELS  1 // can be changed
+
+using std::cout;
+using std::cerr;
+using std::string;
+using std::vector;
+using std::pair;
+
+using tensorflow::Tensor;
+using tensorflow::DT_FLOAT;
+using tensorflow::DT_INT32;
+using tensorflow::TensorShape;
 
 // Global graph definition and session
 tensorflow::GraphDef GraphDef;
@@ -17,20 +34,20 @@ bool LoadGraph(char* file_name) {
   // Read the graph
   tensorflow::Status Status = ReadBinaryProto(tensorflow::Env::Default(), file_name, &GraphDef);
   if (!Status.ok()) {
-    std::cerr << "Error reading graph definition from " << file_name << ": " << Status.ToString() << ".\n";
+    cerr << "Error reading " << file_name << ": " << Status.ToString() << ".\n";
     return false;
   }
 
   Session = tensorflow::NewSession(tensorflow::SessionOptions());
   if (Session == nullptr) {
-    std::cerr << "Error creating Tensorflow session.\n";
+    cerr << "Error creating Tensorflow session.\n";
     return false;
   }
 
   // Add the graph to the session
   Status = Session->Create(GraphDef);
   if (!Status.ok()) {
-    std::cerr << "Error creating graph: " << Status.ToString() << ".\n";
+    cerr << "Error creating graph: " << Status.ToString() << ".\n";
     return false;
   }
 
@@ -41,23 +58,23 @@ bool LoadGraph(char* file_name) {
  * Inspect every nodes in the graph
  */
 void PrintGraph() {
-  std::cout << "\nPrinting every nodes of the graph\n";
+  cout << "\nPrinting every nodes of the graph\n";
   
   const uint SIZE = GraphDef.node_size();
   for (int i = 0; i < SIZE; i++) {
     const auto node = GraphDef.node(i);
-    std::cout << "Node " << i << ": " << node.name() << " (" << node.op() << ")\n";
+    cout << "Node " << i << ": " << node.name() << " (" << node.op() << ")\n";
 
     for (const auto& i : node.input()) {
-      std::cout << "- input: " << i << "\n";
+      cout << "- input: " << i << "\n";
     }
 
     const auto attr = node.attr();
     for (const auto& x : attr) {
-      std::cout << "- " << x.first << ": ";
-      std::cout << SummarizeAttrValue(x.second) << "\n";
+      cout << "- " << x.first << ": ";
+      cout << SummarizeAttrValue(x.second) << "\n";
     }
-    std::cout << "\n";
+    cout << "\n";
   }
 }
 
@@ -74,74 +91,130 @@ void Predict() {
     }
 
     // Replace "output" with tensor name
+    tensorflow::Status Status = Session->Run(Input, { "output" }, {}, &Output);
+
+    cout << "Done Inference " << i << std::endl;
+
+    if (!Status.ok()) {
+      cerr << "Error predicting " << Status.ToString() << "\n";
+      return;
+    }
+
+    auto output_c = Output[0].tensor<float, 2>();
+
+    /* 
+     * Print tensor.
+     *
+     * auto output_c = Output[0].tensor<float, 2>();
+     * for (int i = 0; i < 100; i++) {
+     *  std::cout << output_c(0, i) << "\n";
+     * } 
+     */
+
+    cout << Output[0].DebugString() << "\n";
+  }
+}
+
+/**
+ * Return random float [0, 1)
+ */
+float GetRand() {
+  return static_cast<float>(rand()) / static_cast <float> (RAND_MAX);
+}
+
+/**
+ * Return model inputs
+ */
+vector<pair<string, Tensor>> GetDvDetInputs(int BatchSize, int BboxPadding, int NumInputChannels) {
+  vector<int> NumOfList(BatchSize);
+  const int LOW = 5;
+  const int HIGH = 30;
+  
+  int NumPoints = 0;
+  for (int i = 0; i < BatchSize; i++) {
+    NumOfList[i] = rand() % (HIGH - LOW) + LOW;
+    NumPoints += NumOfList[i];
+    //cout << NumOfList[i] << "\n";
+  }
+
+  // Inputs
+  Tensor Coors(DT_FLOAT, TensorShape({NumPoints, 3}));
+  Tensor Features(DT_FLOAT, TensorShape({NumPoints, NumInputChannels}));
+  Tensor NumList(DT_INT32, TensorShape({1, BatchSize}));
+  Tensor IsTraining(false);
+
+  Tensor Bboxes(DT_FLOAT, TensorShape({NumPoints, BboxPadding, 9}));
+
+  float* CoorsData = Coors.flat<float>().data();
+  for (int i = 0; i < NumPoints * 3; i++) {
+    CoorsData[i] = GetRand();
+  }
+
+  float* FeaturesData = Features.flat<float>().data();
+  for (int i = 0; i < NumPoints * NumInputChannels; i++) {
+    FeaturesData[i] = GetRand();
+  }
+
+  cout << "1";
+
+  int32_t* NumListData = NumList.flat<int32_t>().data();
+  for (int i = 0; i < BatchSize; i++) {
+    NumListData[i] = NumOfList[i];
+  }
+
+  cout << "2";
+
+  float* BboxesData = Bboxes.flat<float>().data();
+  for (int i = 0; i < NumPoints * BboxPadding * 9; i++) {
+    BboxesData[i] = GetRand();
+  }
+
+  // Input and Output tensor
+  vector<pair<string, Tensor>> Inputs = {
+          {"stage1_input_coors_p", Coors},
+          {"stage1_input_features_p", Features},
+          {"stage1_input_num_list_p", NumList}, 
+	  {"is_training", IsTraining}};
+          //{"bboxes", Bboxes}};
+
+  return Inputs;
+}
+
+/**
+ * Inference the DvDet graph
+ */
+void PredictDvDet() {
+  srand(0);
+  // Input and Output tensor
+
+  std::vector<tensorflow::Tensor> Output;
+
+  for (int i = 0; i < NUM_RUNS; i++) {
+    auto Input = GetDvDetInputs(VALID_BATCH_SIZE, MAX_NBBOX, NUM_INPUT_CHANNELS);
+
+    // Replace "output" with tensor name
     tensorflow::Status Status = Session->Run(Input, { "ArgMax" }, {}, &Output);
 
     std::cout << "Done Inference " << i << std::endl;
 
     if (!Status.ok()) {
-      std::cerr << "Error predicting " << Status.ToString() << "\n";
+      std::cerr << "Error: " << Status.ToString() << "\n";
       return;
     }
 
-    auto output_c = Output[0].tensor<float, 2>();
-    /*
-    for (int i = 0; i < 100; i++) {
-      std::cout << output_c(0, i) << "\n";
-    } */
-
-    std::cout << Output[0].DebugString() << "\n";
-  }
-}
-
-void PredictDvDet() {
-
-  // Calculate number of points
-  // Complicated configs to study tests/t.py
-
-  // Inputs 
-  tensorflow::Tensor Coors(tensorflow::DT_FLOAT, tensorflow::TensorShape({1, 200}));
-  tensorflow::Tensor Features(tensorflow::DT_FLOAT, tensorflow::TensorShape({1, 200}));
-  tensorflow::Tensor NumList(tensorflow::DT_INT32, tensorflow::TensorShape({1, 200}));
-  tensorflow::Tensor Bboxes(tensorflow::DT_FLOAT, tensorflow::TensorShape({1, 200}));
-
-  // Input and Output tensor
-  std::vector<std::pair<std::string, tensorflow::Tensor>> Input = {
-	  {"coors", Coors},
-	  {"features", Features}, 
-	  {"num_list", NumList},
-  	  {"bboxes", Bboxes}};
-  std::vector<tensorflow::Tensor> Output;
-
-  for (int i = 0; i < 10; i++) {
-
-    float* XData = X.flat<float>().data();
-    for (int j = 0; j < 200; j++) {
-      XData[i] = 1.0f * j + i;
-    }
-
-    // Replace "output" with tensor name
-    tensorflow::Status Status = Session->Run(Input, { "output" }, {}, &Output);
-
-    std::cout << "Done Inference " << i << std::endl;
-
-    if (!Status.ok()) {
-      std::cerr << "Error predicting " << Status.ToString() << "\n";
-      return;
-    }
-
-    auto output_c = Output[0].tensor<float, 2>();
-    /*
-    for (int i = 0; i < 100; i++) {
-      std::cout << output_c(0, i) << "\n";
-    } */
-
-    std::cout << Output[0].DebugString() << "\n";
+    // auto output_c = Output[0].tensor<float, 2>();
+    //std::cout << Output[0].DebugString() << "\n";
+    Output.clear();
   }
 }
 
 
-int main() {
-  std::string so_file[8] = {
+/**
+ * Import the custom ops library (.so) 
+ * Return true if successful, false otherwise
+ */
+bool ImportLibrary() {
+  string so_file[8] = {
     "get_roi_bbox.so",
     "grid_sampling.so",
     "nms.so",
@@ -151,23 +224,29 @@ int main() {
     "voxel_sampling_feature.so",
     "voxel_sampling_idx_binary.so"
   };
+
   tensorflow::Status Status;
   void* handler;
 
   for (int i = 0; i < 8; i++) {
-    std::cout << "Loading library " << so_file[i] << "\n";
-    std::string file_name = "/app/test-dir/tf_cuda_ops/build/" + so_file[i];
+    cout << "Loading library " << so_file[i] << "\n";
+    string file_name = LIB_DIR + so_file[i];
+
     Status = tensorflow::internal::LoadLibrary(file_name.c_str(), &handler);
     if (!Status.ok()) {
-      std::cerr << "Error: " << Status.ToString() << "\n";
-      return -1;
+      cerr << "Error: " << Status.ToString() << "\n";
+      return false;
     }
   }
 
-  if (LoadGraph(FILENAME)) {
+  return true;
+}
+
+int main() {
+  if (ImportLibrary() && LoadGraph(FILENAME)) {
     PrintGraph();
-    Predict();
-    // PredictDvDet();
+    // Predict();
+    PredictDvDet();
   }
 
   return 0;

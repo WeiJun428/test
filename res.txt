@@ -1,0 +1,779 @@
+2022-07-06 07:37:52.863219: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudart.so.11.0
+2022-07-06 07:37:52.864658: I tensorflow/core/platform/cpu_feature_guard.cc:145] Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.1 SSE4.2 AVX
+2022-07-06 07:37:52.865812: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcuda.so.1
+2022-07-06 07:37:54.442635: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1082] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-07-06 07:37:54.443241: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1666] Found device 0 with properties: 
+name: NVIDIA A2 major: 8 minor: 6 memoryClockRate(GHz): 1.77
+pciBusID: 0000:08:00.0
+2022-07-06 07:37:54.443257: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudart.so.11.0
+2022-07-06 07:37:54.445320: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11
+2022-07-06 07:37:54.446404: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcufft.so.10
+2022-07-06 07:37:54.446534: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcurand.so.10
+2022-07-06 07:37:54.446801: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcusolver.so.11
+2022-07-06 07:37:54.447222: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcusparse.so.11
+2022-07-06 07:37:54.447306: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.8
+2022-07-06 07:37:54.447351: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1082] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-07-06 07:37:54.447871: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1082] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-07-06 07:37:54.448370: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1794] Adding visible gpu devices: 0
+2022-07-06 07:38:00.602848: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1206] Device interconnect StreamExecutor with strength 1 edge matrix:
+2022-07-06 07:38:00.602893: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1212]      0 
+2022-07-06 07:38:00.602899: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1225] 0:   N 
+2022-07-06 07:38:00.602993: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1082] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-07-06 07:38:00.603681: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1082] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-07-06 07:38:00.604210: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1082] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-07-06 07:38:00.604737: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1351] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 13048 MB memory) -> physical GPU (device: 0, name: NVIDIA A2, pci bus id: 0000:08:00.0, compute capability: 8.6)
+Loading library get_roi_bbox.so
+Loading library grid_sampling.so
+Loading library nms.so
+Loading library roi_logits_to_attrs.so
+Loading library voxel_sampling_idx.so
+Loading library radix_sort1d.so
+Loading library voxel_sampling_feature.so
+Loading library voxel_sampling_idx_binary.so
+
+Printing every nodes of the graph
+Node 0: stage1_input_coors_p (Placeholder)
+- shape: [?,3]
+- dtype: DT_FLOAT
+
+Node 1: stage1_input_features_p (Placeholder)
+- dtype: DT_FLOAT
+- shape: [?,1]
+
+Node 2: stage1_input_num_list_p (Placeholder)
+- dtype: DT_INT32
+- shape: [1]
+
+Node 3: is_training (Placeholder)
+- dtype: DT_BOOL
+- shape: []
+
+Node 4: feature_normalization/unstack (Unpack)
+- input: stage1_input_num_list_p
+- T: DT_INT32
+- num: 1
+- axis: 0
+
+Node 5: feature_normalization/add/x (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [] values: 0>
+
+Node 6: feature_normalization/add (AddV2)
+- input: feature_normalization/add/x
+- input: feature_normalization/unstack
+- T: DT_INT32
+
+Node 7: feature_normalization/strided_slice/stack (Const)
+- value: Tensor<type: int32 shape: [2] values: 0 0>
+- dtype: DT_INT32
+
+Node 8: feature_normalization/strided_slice/stack_1/1 (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [] values: 0>
+
+Node 9: feature_normalization/strided_slice/stack_1 (Pack)
+- input: feature_normalization/add
+- input: feature_normalization/strided_slice/stack_1/1
+- T: DT_INT32
+- axis: 0
+- N: 2
+
+Node 10: feature_normalization/strided_slice/stack_2 (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [2] values: 1 1>
+
+Node 11: feature_normalization/strided_slice (StridedSlice)
+- input: stage1_input_features_p
+- input: feature_normalization/strided_slice/stack
+- input: feature_normalization/strided_slice/stack_1
+- input: feature_normalization/strided_slice/stack_2
+- T: DT_FLOAT
+- Index: DT_INT32
+- shrink_axis_mask: 0
+- begin_mask: 2
+- ellipsis_mask: 0
+- new_axis_mask: 0
+- end_mask: 2
+
+Node 12: feature_normalization/Mean/reduction_indices (Const)
+- value: Tensor<type: int32 shape: [] values: 0>
+- dtype: DT_INT32
+
+Node 13: feature_normalization/Mean (Mean)
+- input: feature_normalization/strided_slice
+- input: feature_normalization/Mean/reduction_indices
+- keep_dims: true
+- Tidx: DT_INT32
+- T: DT_FLOAT
+
+Node 14: feature_normalization/sub (Sub)
+- input: feature_normalization/strided_slice
+- input: feature_normalization/Mean
+- T: DT_FLOAT
+
+Node 15: feature_normalization/reduce_std/reduce_variance/Mean/reduction_indices (Const)
+- value: Tensor<type: int32 shape: [] values: 0>
+- dtype: DT_INT32
+
+Node 16: feature_normalization/reduce_std/reduce_variance/Mean (Mean)
+- input: feature_normalization/sub
+- input: feature_normalization/reduce_std/reduce_variance/Mean/reduction_indices
+- Tidx: DT_INT32
+- keep_dims: true
+- T: DT_FLOAT
+
+Node 17: feature_normalization/reduce_std/reduce_variance/sub (Sub)
+- input: feature_normalization/sub
+- input: feature_normalization/reduce_std/reduce_variance/Mean
+- T: DT_FLOAT
+
+Node 18: feature_normalization/reduce_std/reduce_variance/Square (Square)
+- input: feature_normalization/reduce_std/reduce_variance/sub
+- T: DT_FLOAT
+
+Node 19: feature_normalization/reduce_std/reduce_variance/Mean_1/reduction_indices (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [] values: 0>
+
+Node 20: feature_normalization/reduce_std/reduce_variance/Mean_1 (Mean)
+- input: feature_normalization/reduce_std/reduce_variance/Square
+- input: feature_normalization/reduce_std/reduce_variance/Mean_1/reduction_indices
+- T: DT_FLOAT
+- keep_dims: true
+- Tidx: DT_INT32
+
+Node 21: feature_normalization/reduce_std/Sqrt (Sqrt)
+- input: feature_normalization/reduce_std/reduce_variance/Mean_1
+- T: DT_FLOAT
+
+Node 22: feature_normalization/add_1/y (Const)
+- dtype: DT_FLOAT
+- value: Tensor<type: float shape: [] values: 1e-06>
+
+Node 23: feature_normalization/add_1 (AddV2)
+- input: feature_normalization/reduce_std/Sqrt
+- input: feature_normalization/add_1/y
+- T: DT_FLOAT
+
+Node 24: feature_normalization/truediv (RealDiv)
+- input: feature_normalization/sub
+- input: feature_normalization/add_1
+- T: DT_FLOAT
+
+Node 25: feature_normalization/concat/concat (Identity)
+- input: feature_normalization/truediv
+- T: DT_FLOAT
+
+Node 26: stage1/add/y (Const)
+- dtype: DT_FLOAT
+- value: Tensor<type: float shape: [3] values: 35 15 2>
+
+Node 27: stage1/add (AddV2)
+- input: stage1_input_coors_p
+- input: stage1/add/y
+- T: DT_FLOAT
+
+Node 28: stage1/GridSamplingOp (GridSamplingOp)
+- input: stage1/add
+- input: stage1_input_num_list_p
+- resolution: [0.05, 0.05, 0.05]
+- dimension: [50, 30, 6]
+
+Node 29: stage1/GatherV2/axis (Const)
+- value: Tensor<type: int32 shape: [] values: 0>
+- dtype: DT_INT32
+
+Node 30: stage1/GatherV2 (GatherV2)
+- input: stage1_input_coors_p
+- input: stage1/GridSamplingOp
+- input: stage1/GatherV2/axis
+- Taxis: DT_INT32
+- batch_dims: 0
+- Tindices: DT_INT32
+- Tparams: DT_FLOAT
+
+Node 31: stage1/GatherV2_1/axis (Const)
+- value: Tensor<type: int32 shape: [] values: 0>
+- dtype: DT_INT32
+
+Node 32: stage1/GatherV2_1 (GatherV2)
+- input: feature_normalization/concat/concat
+- input: stage1/GridSamplingOp
+- input: stage1/GatherV2_1/axis
+- Taxis: DT_INT32
+- batch_dims: 0
+- Tindices: DT_INT32
+- Tparams: DT_FLOAT
+
+Node 33: stage1/add_1/y (Const)
+- value: Tensor<type: float shape: [3] values: 35 15 2>
+- dtype: DT_FLOAT
+
+Node 34: stage1/add_1 (AddV2)
+- input: stage1_input_coors_p
+- input: stage1/add_1/y
+- T: DT_FLOAT
+
+Node 35: stage1/add_2/y (Const)
+- value: Tensor<type: float shape: [3] values: 35 15 2>
+- dtype: DT_FLOAT
+
+Node 36: stage1/add_2 (AddV2)
+- input: stage1/GatherV2
+- input: stage1/add_2/y
+- T: DT_FLOAT
+
+Node 37: stage1/VoxelSamplingIdxOp (VoxelSamplingIdxOp)
+- input: stage1/add_1
+- input: stage1_input_num_list_p
+- input: stage1/add_2
+- input: stage1/GridSamplingOp:1
+- with_rpn: false
+- resolution: [0.05, 0.05, 0.05]
+- grid_buffer_size: 3
+- dimension: [50, 30, 6]
+- output_pooling_size: 5
+
+Node 38: stage1/VoxelSamplingFeatureOp (VoxelSamplingFeatureOp)
+- input: feature_normalization/concat/concat
+- input: stage1/VoxelSamplingIdxOp
+- padding_value: 0
+
+Node 39: stage1/stage1_base_0/kernel (Const)
+- value: Tensor<type: float shape: [27,16] values: [0.00101477827 -0.000790695194 0.000924101041...]...>
+- dtype: DT_FLOAT
+
+Node 40: stage1/stage1_base_0/kernel/read (Identity)
+- input: stage1/stage1_base_0/kernel
+- T: DT_FLOAT
+- _class: ["loc:@stage1/stage1_base_0/kernel"]
+
+Node 41: stage1/stage1_base_0/Reshape/shape (Const)
+- value: Tensor<type: int32 shape: [2] values: -1 27>
+- dtype: DT_INT32
+
+Node 42: stage1/stage1_base_0/Reshape (Reshape)
+- input: stage1/VoxelSamplingFeatureOp
+- input: stage1/stage1_base_0/Reshape/shape
+- T: DT_FLOAT
+- Tshape: DT_INT32
+
+Node 43: stage1/stage1_base_0/MatMul (MatMul)
+- input: stage1/stage1_base_0/Reshape
+- input: stage1/stage1_base_0/kernel/read
+- transpose_b: false
+- T: DT_FLOAT
+- transpose_a: false
+
+Node 44: stage1/stage1_base_0/ln/beta (Const)
+- value: Tensor<type: float shape: [16] values: 0 0 0...>
+- dtype: DT_FLOAT
+
+Node 45: stage1/stage1_base_0/ln/beta/read (Identity)
+- input: stage1/stage1_base_0/ln/beta
+- T: DT_FLOAT
+- _class: ["loc:@stage1/stage1_base_0/ln/beta"]
+
+Node 46: stage1/stage1_base_0/ln/gamma (Const)
+- value: Tensor<type: float shape: [16] values: 1 1 1...>
+- dtype: DT_FLOAT
+
+Node 47: stage1/stage1_base_0/ln/gamma/read (Identity)
+- input: stage1/stage1_base_0/ln/gamma
+- T: DT_FLOAT
+- _class: ["loc:@stage1/stage1_base_0/ln/gamma"]
+
+Node 48: stage1/stage1_base_0/ln/moments/mean/reduction_indices (Const)
+- value: Tensor<type: int32 shape: [1] values: 1>
+- dtype: DT_INT32
+
+Node 49: stage1/stage1_base_0/ln/moments/mean (Mean)
+- input: stage1/stage1_base_0/MatMul
+- input: stage1/stage1_base_0/ln/moments/mean/reduction_indices
+- Tidx: DT_INT32
+- keep_dims: true
+- T: DT_FLOAT
+
+Node 50: stage1/stage1_base_0/ln/moments/StopGradient (StopGradient)
+- input: stage1/stage1_base_0/ln/moments/mean
+- T: DT_FLOAT
+
+Node 51: stage1/stage1_base_0/ln/moments/SquaredDifference (SquaredDifference)
+- input: stage1/stage1_base_0/MatMul
+- input: stage1/stage1_base_0/ln/moments/StopGradient
+- T: DT_FLOAT
+
+Node 52: stage1/stage1_base_0/ln/moments/variance/reduction_indices (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [1] values: 1>
+
+Node 53: stage1/stage1_base_0/ln/moments/variance (Mean)
+- input: stage1/stage1_base_0/ln/moments/SquaredDifference
+- input: stage1/stage1_base_0/ln/moments/variance/reduction_indices
+- keep_dims: true
+- Tidx: DT_INT32
+- T: DT_FLOAT
+
+Node 54: stage1/stage1_base_0/ln/batchnorm/add/y (Const)
+- value: Tensor<type: float shape: [] values: 1e-12>
+- dtype: DT_FLOAT
+
+Node 55: stage1/stage1_base_0/ln/batchnorm/add (AddV2)
+- input: stage1/stage1_base_0/ln/moments/variance
+- input: stage1/stage1_base_0/ln/batchnorm/add/y
+- T: DT_FLOAT
+
+Node 56: stage1/stage1_base_0/ln/batchnorm/Rsqrt (Rsqrt)
+- input: stage1/stage1_base_0/ln/batchnorm/add
+- T: DT_FLOAT
+
+Node 57: stage1/stage1_base_0/ln/batchnorm/mul (Mul)
+- input: stage1/stage1_base_0/ln/batchnorm/Rsqrt
+- input: stage1/stage1_base_0/ln/gamma/read
+- T: DT_FLOAT
+
+Node 58: stage1/stage1_base_0/ln/batchnorm/mul_1 (Mul)
+- input: stage1/stage1_base_0/MatMul
+- input: stage1/stage1_base_0/ln/batchnorm/mul
+- T: DT_FLOAT
+
+Node 59: stage1/stage1_base_0/ln/batchnorm/mul_2 (Mul)
+- input: stage1/stage1_base_0/ln/moments/mean
+- input: stage1/stage1_base_0/ln/batchnorm/mul
+- T: DT_FLOAT
+
+Node 60: stage1/stage1_base_0/ln/batchnorm/sub (Sub)
+- input: stage1/stage1_base_0/ln/beta/read
+- input: stage1/stage1_base_0/ln/batchnorm/mul_2
+- T: DT_FLOAT
+
+Node 61: stage1/stage1_base_0/ln/batchnorm/add_1 (AddV2)
+- input: stage1/stage1_base_0/ln/batchnorm/mul_1
+- input: stage1/stage1_base_0/ln/batchnorm/sub
+- T: DT_FLOAT
+
+Node 62: stage1/stage1_base_0/Relu (Relu)
+- input: stage1/stage1_base_0/ln/batchnorm/add_1
+- T: DT_FLOAT
+
+Node 63: stage1/concat/axis (Const)
+- value: Tensor<type: int32 shape: [] values: 1>
+- dtype: DT_INT32
+
+Node 64: stage1/concat (ConcatV2)
+- input: stage1/GatherV2_1
+- input: stage1/stage1_base_0/Relu
+- input: stage1/concat/axis
+- N: 2
+- Tidx: DT_INT32
+- T: DT_FLOAT
+
+Node 65: stage1/add_3/y (Const)
+- value: Tensor<type: float shape: [3] values: 35 15 2>
+- dtype: DT_FLOAT
+
+Node 66: stage1/add_3 (AddV2)
+- input: stage1/GatherV2
+- input: stage1/add_3/y
+- T: DT_FLOAT
+
+Node 67: stage1/GridSamplingOp_1 (GridSamplingOp)
+- input: stage1/add_3
+- input: stage1/GridSamplingOp:1
+- resolution: [0.1, 0.1, 0.1]
+- dimension: [50, 30, 6]
+
+Node 68: stage1/GatherV2_2/axis (Const)
+- value: Tensor<type: int32 shape: [] values: 0>
+- dtype: DT_INT32
+
+Node 69: stage1/GatherV2_2 (GatherV2)
+- input: stage1/GatherV2
+- input: stage1/GridSamplingOp_1
+- input: stage1/GatherV2_2/axis
+- Tparams: DT_FLOAT
+- Taxis: DT_INT32
+- batch_dims: 0
+- Tindices: DT_INT32
+
+Node 70: stage1/GatherV2_3/axis (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [] values: 0>
+
+Node 71: stage1/GatherV2_3 (GatherV2)
+- input: stage1/concat
+- input: stage1/GridSamplingOp_1
+- input: stage1/GatherV2_3/axis
+- Tparams: DT_FLOAT
+- Taxis: DT_INT32
+- batch_dims: 0
+- Tindices: DT_INT32
+
+Node 72: stage1/cond_dropout/cond/pred_id (Identity)
+- input: is_training
+- T: DT_BOOL
+
+Node 73: stage1/cond_dropout/cond/Switch_1 (Switch)
+- input: stage1/GatherV2_3
+- input: stage1/cond_dropout/cond/pred_id
+- T: DT_FLOAT
+- _class: ["loc:@stage1/GatherV2_3"]
+
+Node 74: stage1/cond_dropout/cond/Switch_2 (Switch)
+- input: stage1/GatherV2_3
+- input: stage1/cond_dropout/cond/pred_id
+- T: DT_FLOAT
+- _class: ["loc:@stage1/GatherV2_3"]
+
+Node 75: stage1/cond_dropout/cond/Merge (Merge)
+- input: stage1/cond_dropout/cond/Switch_2
+- input: stage1/cond_dropout/cond/Switch_1:1
+- N: 2
+- T: DT_FLOAT
+
+Node 76: stage1/stage1_rpn_cls_fc_0/weight (Const)
+- value: Tensor<type: float shape: [17,32] values: [-9.64377105e-05 -0.000203425167 -0.00102533912...]...>
+- dtype: DT_FLOAT
+
+Node 77: stage1/stage1_rpn_cls_fc_0/weight/read (Identity)
+- input: stage1/stage1_rpn_cls_fc_0/weight
+- T: DT_FLOAT
+- _class: ["loc:@stage1/stage1_rpn_cls_fc_0/weight"]
+
+Node 78: stage1/stage1_rpn_cls_fc_0/biases (Const)
+- dtype: DT_FLOAT
+- value: Tensor<type: float shape: [32] values: 0 0 0...>
+
+Node 79: stage1/stage1_rpn_cls_fc_0/biases/read (Identity)
+- input: stage1/stage1_rpn_cls_fc_0/biases
+- T: DT_FLOAT
+- _class: ["loc:@stage1/stage1_rpn_cls_fc_0/biases"]
+
+Node 80: stage1/stage1_rpn_cls_fc_0/MatMul (MatMul)
+- input: stage1/cond_dropout/cond/Merge
+- input: stage1/stage1_rpn_cls_fc_0/weight/read
+- transpose_a: false
+- transpose_b: false
+- T: DT_FLOAT
+
+Node 81: stage1/stage1_rpn_cls_fc_0/BiasAdd (BiasAdd)
+- input: stage1/stage1_rpn_cls_fc_0/MatMul
+- input: stage1/stage1_rpn_cls_fc_0/biases/read
+- T: DT_FLOAT
+- data_format: "NHWC"
+
+Node 82: stage1/stage1_rpn_cls_fc_0/Relu (Relu)
+- input: stage1/stage1_rpn_cls_fc_0/BiasAdd
+- T: DT_FLOAT
+
+Node 83: stage1/cond_dropout_1/cond/pred_id (Identity)
+- input: is_training
+- T: DT_BOOL
+
+Node 84: stage1/cond_dropout_1/cond/Switch_1 (Switch)
+- input: stage1/stage1_rpn_cls_fc_0/Relu
+- input: stage1/cond_dropout_1/cond/pred_id
+- T: DT_FLOAT
+- _class: ["loc:@stage1/stage1_rpn_cls_fc_0/Relu"]
+
+Node 85: stage1/cond_dropout_1/cond/Switch_2 (Switch)
+- input: stage1/stage1_rpn_cls_fc_0/Relu
+- input: stage1/cond_dropout_1/cond/pred_id
+- T: DT_FLOAT
+- _class: ["loc:@stage1/stage1_rpn_cls_fc_0/Relu"]
+
+Node 86: stage1/cond_dropout_1/cond/Merge (Merge)
+- input: stage1/cond_dropout_1/cond/Switch_2
+- input: stage1/cond_dropout_1/cond/Switch_1:1
+- T: DT_FLOAT
+- N: 2
+
+Node 87: stage1/stage1_rpn_cls_fc_1/weight (Const)
+- value: Tensor<type: float shape: [32,3] values: [0.000155327696 -0.000163836667 -0.000683741644]...>
+- dtype: DT_FLOAT
+
+Node 88: stage1/stage1_rpn_cls_fc_1/weight/read (Identity)
+- input: stage1/stage1_rpn_cls_fc_1/weight
+- T: DT_FLOAT
+- _class: ["loc:@stage1/stage1_rpn_cls_fc_1/weight"]
+
+Node 89: stage1/stage1_rpn_cls_fc_1/biases (Const)
+- value: Tensor<type: float shape: [3] values: 0 0 0>
+- dtype: DT_FLOAT
+
+Node 90: stage1/stage1_rpn_cls_fc_1/biases/read (Identity)
+- input: stage1/stage1_rpn_cls_fc_1/biases
+- T: DT_FLOAT
+- _class: ["loc:@stage1/stage1_rpn_cls_fc_1/biases"]
+
+Node 91: stage1/stage1_rpn_cls_fc_1/MatMul (MatMul)
+- input: stage1/cond_dropout_1/cond/Merge
+- input: stage1/stage1_rpn_cls_fc_1/weight/read
+- transpose_b: false
+- T: DT_FLOAT
+- transpose_a: false
+
+Node 92: stage1/stage1_rpn_cls_fc_1/BiasAdd (BiasAdd)
+- input: stage1/stage1_rpn_cls_fc_1/MatMul
+- input: stage1/stage1_rpn_cls_fc_1/biases/read
+- T: DT_FLOAT
+- data_format: "NHWC"
+
+Node 93: stage1/cond_dropout_2/cond/pred_id (Identity)
+- input: is_training
+- T: DT_BOOL
+
+Node 94: stage1/cond_dropout_2/cond/Switch_1 (Switch)
+- input: stage1/GatherV2_3
+- input: stage1/cond_dropout_2/cond/pred_id
+- T: DT_FLOAT
+- _class: ["loc:@stage1/GatherV2_3"]
+
+Node 95: stage1/cond_dropout_2/cond/Switch_2 (Switch)
+- input: stage1/GatherV2_3
+- input: stage1/cond_dropout_2/cond/pred_id
+- T: DT_FLOAT
+- _class: ["loc:@stage1/GatherV2_3"]
+
+Node 96: stage1/cond_dropout_2/cond/Merge (Merge)
+- input: stage1/cond_dropout_2/cond/Switch_2
+- input: stage1/cond_dropout_2/cond/Switch_1:1
+- T: DT_FLOAT
+- N: 2
+
+Node 97: stage1/stage1_rpn_fc_0/weight (Const)
+- value: Tensor<type: float shape: [17,8] values: [0.000846823386 -0.000792951847 0.000667983259...]...>
+- dtype: DT_FLOAT
+
+Node 98: stage1/stage1_rpn_fc_0/weight/read (Identity)
+- input: stage1/stage1_rpn_fc_0/weight
+- T: DT_FLOAT
+- _class: ["loc:@stage1/stage1_rpn_fc_0/weight"]
+
+Node 99: stage1/stage1_rpn_fc_0/biases (Const)
+- value: Tensor<type: float shape: [8] values: 0 0 0...>
+- dtype: DT_FLOAT
+
+Node 100: stage1/stage1_rpn_fc_0/biases/read (Identity)
+- input: stage1/stage1_rpn_fc_0/biases
+- T: DT_FLOAT
+- _class: ["loc:@stage1/stage1_rpn_fc_0/biases"]
+
+Node 101: stage1/stage1_rpn_fc_0/MatMul (MatMul)
+- input: stage1/cond_dropout_2/cond/Merge
+- input: stage1/stage1_rpn_fc_0/weight/read
+- T: DT_FLOAT
+- transpose_a: false
+- transpose_b: false
+
+Node 102: stage1/stage1_rpn_fc_0/BiasAdd (BiasAdd)
+- input: stage1/stage1_rpn_fc_0/MatMul
+- input: stage1/stage1_rpn_fc_0/biases/read
+- T: DT_FLOAT
+- data_format: "NHWC"
+
+Node 103: stage1/RoiLogitsToAttrsOp (RoiLogitsToAttrsOp)
+- input: stage1/GatherV2_2
+- input: stage1/stage1_rpn_fc_0/BiasAdd
+- anchor_size: [0.6, 0.6, 1.6]
+
+Node 104: stage1/strided_slice/stack (Const)
+- value: Tensor<type: int32 shape: [2] values: 0 7>
+- dtype: DT_INT32
+
+Node 105: stage1/strided_slice/stack_1 (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [2] values: 0 8>
+
+Node 106: stage1/strided_slice/stack_2 (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [2] values: 1 1>
+
+Node 107: stage1/strided_slice (StridedSlice)
+- input: stage1/stage1_rpn_fc_0/BiasAdd
+- input: stage1/strided_slice/stack
+- input: stage1/strided_slice/stack_1
+- input: stage1/strided_slice/stack_2
+- T: DT_FLOAT
+- Index: DT_INT32
+- shrink_axis_mask: 2
+- begin_mask: 1
+- ellipsis_mask: 0
+- new_axis_mask: 0
+- end_mask: 1
+
+Node 108: Sigmoid (Sigmoid)
+- input: stage1/strided_slice
+- T: DT_FLOAT
+
+Node 109: Softmax (Softmax)
+- input: stage1/stage1_rpn_cls_fc_1/BiasAdd
+- T: DT_FLOAT
+
+Node 110: Max/reduction_indices (Const)
+- value: Tensor<type: int32 shape: [] values: 1>
+- dtype: DT_INT32
+
+Node 111: Max (Max)
+- input: Softmax
+- input: Max/reduction_indices
+- Tidx: DT_INT32
+- keep_dims: false
+- T: DT_FLOAT
+
+Node 112: Pow/y (Const)
+- value: Tensor<type: float shape: [] values: 0.68>
+- dtype: DT_FLOAT
+
+Node 113: Pow (Pow)
+- input: Sigmoid
+- input: Pow/y
+- T: DT_FLOAT
+
+Node 114: Pow_1/y (Const)
+- value: Tensor<type: float shape: [] values: 0.32>
+- dtype: DT_FLOAT
+
+Node 115: Pow_1 (Pow)
+- input: Max
+- input: Pow_1/y
+- T: DT_FLOAT
+
+Node 116: mul (Mul)
+- input: Pow
+- input: Pow_1
+- T: DT_FLOAT
+
+Node 117: Greater/y (Const)
+- value: Tensor<type: float shape: [] values: 0.85>
+- dtype: DT_FLOAT
+
+Node 118: Greater (Greater)
+- input: mul
+- input: Greater/y
+- T: DT_FLOAT
+
+Node 119: Cast (Cast)
+- input: Greater
+- SrcT: DT_BOOL
+- Truncate: false
+- DstT: DT_INT32
+
+Node 120: Const (Const)
+- value: Tensor<type: int32 shape: [1] values: 0>
+- dtype: DT_INT32
+
+Node 121: Sum (Sum)
+- input: Cast
+- input: Const
+- keep_dims: false
+- Tidx: DT_INT32
+- T: DT_INT32
+
+Node 122: Shape (Shape)
+- input: mul
+- T: DT_FLOAT
+- out_type: DT_INT32
+
+Node 123: strided_slice/stack (Const)
+- value: Tensor<type: int32 shape: [1] values: 0>
+- dtype: DT_INT32
+
+Node 124: strided_slice/stack_1 (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [1] values: 1>
+
+Node 125: strided_slice/stack_2 (Const)
+- value: Tensor<type: int32 shape: [1] values: 1>
+- dtype: DT_INT32
+
+Node 126: strided_slice (StridedSlice)
+- input: Shape
+- input: strided_slice/stack
+- input: strided_slice/stack_1
+- input: strided_slice/stack_2
+- shrink_axis_mask: 1
+- begin_mask: 0
+- ellipsis_mask: 0
+- new_axis_mask: 0
+- end_mask: 0
+- T: DT_INT32
+- Index: DT_INT32
+
+Node 127: range/start (Const)
+- value: Tensor<type: int32 shape: [] values: 0>
+- dtype: DT_INT32
+
+Node 128: range/delta (Const)
+- value: Tensor<type: int32 shape: [] values: 1>
+- dtype: DT_INT32
+
+Node 129: range (Range)
+- input: range/start
+- input: strided_slice
+- input: range/delta
+- Tidx: DT_INT32
+
+Node 130: RadixSort (RadixSort)
+- input: mul
+- input: range
+- order: "DESCENDING"
+- TIndex: DT_INT32
+- TKey: DT_FLOAT
+
+Node 131: GatherV2/axis (Const)
+- value: Tensor<type: int32 shape: [] values: 0>
+- dtype: DT_INT32
+
+Node 132: GatherV2 (GatherV2)
+- input: stage1/RoiLogitsToAttrsOp
+- input: RadixSort:1
+- input: GatherV2/axis
+- Taxis: DT_INT32
+- batch_dims: 0
+- Tindices: DT_INT32
+- Tparams: DT_FLOAT
+
+Node 133: strided_slice_1/stack (Const)
+- value: Tensor<type: int32 shape: [2] values: 0 0>
+- dtype: DT_INT32
+
+Node 134: strided_slice_1/stack_1/1 (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [] values: 0>
+
+Node 135: strided_slice_1/stack_1 (Pack)
+- input: Sum
+- input: strided_slice_1/stack_1/1
+- T: DT_INT32
+- axis: 0
+- N: 2
+
+Node 136: strided_slice_1/stack_2 (Const)
+- value: Tensor<type: int32 shape: [2] values: 1 1>
+- dtype: DT_INT32
+
+Node 137: strided_slice_1 (StridedSlice)
+- input: GatherV2
+- input: strided_slice_1/stack
+- input: strided_slice_1/stack_1
+- input: strided_slice_1/stack_2
+- shrink_axis_mask: 0
+- begin_mask: 3
+- ellipsis_mask: 0
+- new_axis_mask: 0
+- end_mask: 2
+- Index: DT_INT32
+- T: DT_FLOAT
+
+Node 138: RotatedNms3d (RotatedNms3d)
+- input: strided_slice_1
+- nms_overlap_thresh: 0.2
+
+Node 139: strided_slice_2/stack (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [1] values: 0>
+
+Node 140: strided_slice_2/stack_1 (Const)
+- dtype: DT_INT32
+- value: Tensor<type: int32 shape: [1] values: 1>2022-07-06 07:38:00.718918: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11
